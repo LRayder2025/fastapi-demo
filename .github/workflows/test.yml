@@ -1,0 +1,63 @@
+# ── 1. Workflow name ─────────────────────────────────────────────
+name: Run Tests
+
+# ── 2. Trigger ───────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# ── 3. Jobs ──────────────────────────────────────────────────────
+jobs:
+  test:
+    # ── 4. Runner ──────────────────────────────────────────────
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 5. Checkout ──────────────────────────────────────────
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # ── 6. Python setup ──────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ── 7. Install dependencies ──────────────────────────────
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ── 8. Run tests ─────────────────────────────────────────
+      - name: Run pytest
+        run: pytest
+
+
+
+#Section-by-section explanation
+#name — A human-readable label shown in the GitHub Actions UI. Can be anything; keep it descriptive.
+
+#on — The event trigger. This workflow fires on two events:
+
+#Any push to the main branch
+#Any pull_request targeting main
+#You can trigger on dozens of events: schedule (cron), workflow_dispatch (manual button), release, issue_comment, and more. The branches filter means this won't fire on pushes to feature branches unless you add them.
+
+#jobs — A workflow contains one or more jobs. Jobs run in parallel by default (you add needs: to serialize them). Each job gets its own fresh VM.
+
+#runs-on — The type of runner (virtual machine) GitHub will provision. ubuntu-latest is the most common choice; windows-latest and macos-latest are also available.
+
+#steps — An ordered list of tasks within the job. Each step has a name (shown in the UI log) and either:
+
+#uses: — a pre-built community action (e.g., actions/checkout@v4 clones your repo onto the runner)
+#run: — a raw shell command
+#actions/checkout@v4 — This is the official GitHub action that clones your repository into the runner's working directory. Without this step, the runner has no access to your code. The @v4 pins to a specific major version of the action.
+
+#actions/setup-python@v5 — Installs and activates a specific Python version on the runner. The with: block passes parameters to the action — here it sets python-version: "3.11".
+
+#pip install -r requirements.txt — A plain shell command. Any run: step is just a bash command (or PowerShell on Windows runners). Multiple lines are written with a | (literal block scalar in YAML).
+
+#pytest — Runs the test suite. If any test fails, this step exits non-zero, the job is marked as failed, and GitHub blocks the commit from being merged (if branch protection rules are set).
