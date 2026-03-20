@@ -17,7 +17,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # ── 5. Log in to GHCR ────────────────────────────────────
+      # ── 5. Convert username to lowercase ─────────────────────
+      - name: Set lowercase username
+        id: lowercase
+        run: echo "username=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      # ── 6. Log in to GHCR ────────────────────────────────────
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -25,10 +30,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
 
-      # ── 6. Build and push ────────────────────────────────────
+      # ── 7. Build and push ────────────────────────────────────
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.actor }}/fastapi-demo:latest | tr '[:upper:]' '[:lower:]'
+          tags: ghcr.io/${{ steps.lowercase.outputs.username }}/fastapi-demo:latest
